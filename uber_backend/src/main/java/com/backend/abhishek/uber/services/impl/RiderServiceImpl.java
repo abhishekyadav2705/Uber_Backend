@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +82,22 @@ public class RiderServiceImpl implements RiderService {
         driverRepository.save(currentDriver);
 
         return modelMapper.map(savedRide,RideDto.class);
+    }
+
+    @Override
+    public RideRequestDto cancelRideRequest(Long rideRequestId) {
+        Optional<RideRequest> rideRequestById = rideRequestRepository.findById(rideRequestId);
+        if(rideRequestById.isEmpty()){
+            throw new RuntimeException("Ride with id "+rideRequestId+" not  found");
+        }
+        if(!rideRequestById.get().getRideRequestStatus().equals(RideRequestStatus.PENDING)){
+            throw new RuntimeException("Ride is already cancelled "+rideRequestById.get().getRideRequestStatus());
+        }
+        RideRequest rideRequest = rideRequestById.get();
+        rideRequest.setRideRequestStatus(RideRequestStatus.CANCELLED);
+
+        RideRequest savedRideRequest = rideRequestRepository.save(rideRequest);
+        return modelMapper.map(savedRideRequest,RideRequestDto.class);
     }
 
     @Override
