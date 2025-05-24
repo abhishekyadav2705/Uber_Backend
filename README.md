@@ -1,35 +1,35 @@
 
-# Uber Backend
+# 🚗 Uber Backend
 
-Backend service for an Uber-like ride-sharing application built with Spring Boot.
+Backend service for an Uber-like ride-sharing application built with Spring Boot. 🚀
 
-## Overview
+## 📋 Overview
 
 This project provides REST APIs for managing rides, users, drivers, and locations. It leverages:
 
-- Spring Boot 3.5.0  
-- Spring Data JPA with PostgreSQL  
-- Hibernate Spatial for geolocation queries  
-- ModelMapper for DTO mapping  
-- Springdoc OpenAPI for API documentation  
+- 🟢 Spring Boot 3.5.0  
+- 🗄️ Spring Data JPA with PostgreSQL  
+- 📍 Hibernate Spatial for geolocation queries  
+- 🔄 ModelMapper for DTO mapping  
+- 📚 Springdoc OpenAPI for API documentation  
 
-## Features
+## ✨ Features
 
-- User registration and authentication  
-- Ride request and tracking  
-- Driver management and assignment  
-- Location-based ride calculations  
-- OpenAPI Swagger UI documentation  
+- 👤 User registration and authentication  
+- 🚖 Ride request and tracking  
+- 👨‍✈️ Driver management and assignment  
+- 🌐 Location-based ride calculations  
+- 📖 OpenAPI Swagger UI documentation  
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+### 🛠️ Prerequisites
 
-- Java 24 or higher  
-- Maven 3.x  
-- PostgreSQL database  
+- ☕ Java 24 or higher  
+- 🛠️ Maven 3.x  
+- 🐘 PostgreSQL database  
 
-### Installation
+### 📝 Installation
 
 1. Clone the repo:
 
@@ -65,7 +65,7 @@ This project provides REST APIs for managing rides, users, drivers, and location
    http://localhost:8080/swagger-ui/index.html
    ```
 
-## Project Structure
+## 🏗️ Project Structure
 
 - `com.backend.abhishek.uber_backend` - base package  
 - `controller` - REST API controllers  
@@ -74,7 +74,7 @@ This project provides REST APIs for managing rides, users, drivers, and location
 - `model` - entity classes  
 - `config` - app configurations (Swagger, security, etc.)  
 
-## Dependencies
+## 📦 Dependencies
 
 - Spring Boot Starter Web  
 - Spring Boot Starter Data JPA  
@@ -84,10 +84,10 @@ This project provides REST APIs for managing rides, users, drivers, and location
 - Springdoc OpenAPI UI  
 - Lombok (optional)  
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please open issues or submit pull requests.
 
 ---
 
-*Developed by Abhishek Yadav*
+*Developed by Abhishek Yadav* ✌️
