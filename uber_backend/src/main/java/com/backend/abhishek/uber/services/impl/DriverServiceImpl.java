@@ -9,9 +9,12 @@ import com.backend.abhishek.uber.entities.RideRequest;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
 import com.backend.abhishek.uber.repositories.DriverRepository;
+import com.backend.abhishek.uber.repositories.RideRepository;
 import com.backend.abhishek.uber.services.DriverService;
+import com.backend.abhishek.uber.services.PaymentService;
 import com.backend.abhishek.uber.services.RideRequestService;
 import com.backend.abhishek.uber.services.RideService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -28,6 +31,8 @@ public class DriverServiceImpl implements DriverService {
     private final DriverRepository driverRepository;
     private final RideService  rideService;
     private final ModelMapper modelMapper;
+    private final RideRepository rideRepository;
+    private final PaymentService paymentService;
 
     @Override
     public RideDto acceptRide(Long rideRequestId) {
@@ -81,19 +86,44 @@ public class DriverServiceImpl implements DriverService {
         ride.setStartedAt(LocalDateTime.now());
 
         Ride savedRide = rideService.updateRideStatus(ride,RideStatus.ONGOING);
+
+        paymentService.createNewPayment(savedRide);
+
         //making the driver to user location to start the ride
         System.out.println("Pickup: " + ride.getPickupLocation());
         System.out.println("Before update: " + driver.getCurrentLocation());
         driver.setCurrentLocation(ride.getPickupLocation());
         driverRepository.save(driver);
         System.out.println("After update: " + driver.getCurrentLocation());
+
         return modelMapper.map(savedRide,RideDto.class);
     }
 
     @Override
+    @Transactional
     public RideDto endRide(Long rideId) {
 
-        return null;
+        Ride ride = rideService.getRideById(rideId);
+        Driver driver= getCurrentDriver();
+
+        if(!driver.equals(ride.getDriver())){
+            throw new RuntimeException("Driver cannot end the ride as he has not accepted earlier");
+        }
+        if(!ride.getRideStatus().equals(RideStatus.ONGOING)){
+            throw new RuntimeException("Ride status is not Ongoing, hence cannot be started "+ ride.getRideStatus());
+        }
+        ride.setEndedAt(LocalDateTime.now());
+        Ride savedRide = rideService.updateRideStatus(ride,RideStatus.ENDED);
+        updateDriverAvailability(driver,true);
+        paymentService.processPayment(ride);
+
+        return modelMapper.map(savedRide,RideDto.class);
+    }
+
+    private void updateDriverAvailability(Driver driver, boolean available) {
+        driver.setAvailable(available);
+        driverRepository.save(driver);
+
     }
 
     @Override

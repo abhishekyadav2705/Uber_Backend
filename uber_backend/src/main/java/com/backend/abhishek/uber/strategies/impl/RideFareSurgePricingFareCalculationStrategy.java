@@ -31,7 +31,7 @@ public class RideFareSurgePricingFareCalculationStrategy implements RideFareCalc
         boolean isNightTime = isNightTime(rideRequest.getRequestedTime());
         boolean isWeekendEvening = isWeekendEvening(rideRequest.getRequestedTime());
 
-        if (isHeavyRain) surge *= 1.5;
+        if (isHeavyRain) surge *= 2.5;
         if (isNightTime) surge *= 1.2;
         if (isTrafficHigh) surge *= 1.5;
         if (isWeekendEvening) surge *= 1.3;
@@ -73,7 +73,7 @@ public class RideFareSurgePricingFareCalculationStrategy implements RideFareCalc
 
     @Override
     public double calculateFare(RideRequest rideRequest) {
-        double ratePerKm = 10.0;
+        double ratePerKm = 15.0;
         double distance = distanceService.calculateDistance(
                 rideRequest.getPickupLocation(), rideRequest.getDropOffLocation());
 
