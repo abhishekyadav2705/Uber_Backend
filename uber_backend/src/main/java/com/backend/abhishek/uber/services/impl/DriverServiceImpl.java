@@ -46,6 +46,7 @@ public class DriverServiceImpl implements DriverService {
            throw new RuntimeException("Driver is not available,  ride cannot be accepted");
         }
         currentDriver.setAvailable(false);
+        currentDriver.setMobileNumber(currentDriver.getMobileNumber());
         Ride ride = rideService.createNewRide(rideRequest,savedDriver);
         return modelMapper.map(ride,RideDto.class);
     }

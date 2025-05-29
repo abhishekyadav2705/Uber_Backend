@@ -15,4 +15,6 @@ public class DriverDto {
 
     private Boolean available;
     private String vehicleId;
+
+    private String mobileNumber;
 }

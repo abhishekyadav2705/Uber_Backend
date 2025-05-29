@@ -26,4 +26,6 @@ public class Driver {
 
     @Column(columnDefinition = "Geometry(Point, 4326)")
     private Point currentLocation;
+
+    private String mobileNumber;
 }
