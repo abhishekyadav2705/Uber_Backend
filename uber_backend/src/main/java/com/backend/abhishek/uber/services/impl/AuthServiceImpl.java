@@ -1,13 +1,17 @@
 package com.backend.abhishek.uber.services.impl;
 
 import com.backend.abhishek.uber.dto.DriverDto;
+import com.backend.abhishek.uber.dto.OnboardDriverDTO;
 import com.backend.abhishek.uber.dto.SignupDto;
 import com.backend.abhishek.uber.dto.UserDto;
+import com.backend.abhishek.uber.entities.Driver;
 import com.backend.abhishek.uber.entities.User;
 import com.backend.abhishek.uber.entities.enums.Role;
+import com.backend.abhishek.uber.exceptions.ResourceNotFoundException;
 import com.backend.abhishek.uber.exceptions.RuntimeConflictException;
 import com.backend.abhishek.uber.repositories.UserRepository;
 import com.backend.abhishek.uber.services.AuthService;
+import com.backend.abhishek.uber.services.DriverService;
 import com.backend.abhishek.uber.services.RiderService;
 import com.backend.abhishek.uber.services.WalletService;
 import jakarta.transaction.Transactional;
@@ -25,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RiderService riderService;
     private final WalletService walletService;
+    private final DriverService driverService;
 
     @Override
     public String login(String email, String password) {
@@ -52,7 +57,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public DriverDto onboardNewDriver(Long userId) {
-        return null;
+    public DriverDto onboardNewDriver(OnboardDriverDTO onboardDriverDTO) {
+        User user = userRepository.findById(onboardDriverDTO.getUserId()).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + onboardDriverDTO.getUserId()));
+        if(user.getRoles().contains(Role.DRIVER)){
+            throw new RuntimeConflictException("User with id "+onboardDriverDTO.getUserId()+" is  already a driver");
+        }
+
+        Driver createDriver = Driver.builder()
+                .user(user)
+                .rating(0.0)
+                .vehicleId(onboardDriverDTO.getVehicleId()
+                )
+                .available(true)
+                .build();
+        user.getRoles().add(Role.DRIVER);
+        userRepository.save(user);
+        Driver savedDriver = driverService.createNewDriver(createDriver);
+
+        return modelMapper.map(savedDriver,DriverDto.class);
     }
 }

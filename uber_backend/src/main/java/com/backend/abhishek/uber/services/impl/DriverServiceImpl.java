@@ -150,4 +150,9 @@ public class DriverServiceImpl implements DriverService {
         return driverRepository.findById(2L)
                 .orElseThrow((()->new RuntimeException("Driver with id  "+2+" not found!!!")));
     }
+
+    @Override
+    public Driver createNewDriver(Driver driver) {
+        return driverRepository.save(driver);
+    }
 }
