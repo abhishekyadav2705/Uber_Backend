@@ -8,12 +8,10 @@ import com.backend.abhishek.uber.entities.Ride;
 import com.backend.abhishek.uber.entities.RideRequest;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
+import com.backend.abhishek.uber.exceptions.ResourceNotFoundException;
 import com.backend.abhishek.uber.repositories.DriverRepository;
 import com.backend.abhishek.uber.repositories.RideRepository;
-import com.backend.abhishek.uber.services.DriverService;
-import com.backend.abhishek.uber.services.PaymentService;
-import com.backend.abhishek.uber.services.RideRequestService;
-import com.backend.abhishek.uber.services.RideService;
+import com.backend.abhishek.uber.services.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -33,6 +31,7 @@ public class DriverServiceImpl implements DriverService {
     private final ModelMapper modelMapper;
     private final RideRepository rideRepository;
     private final PaymentService paymentService;
+    private final RatingService ratingService;
 
     @Override
     public RideDto acceptRide(Long rideRequestId) {
@@ -89,6 +88,7 @@ public class DriverServiceImpl implements DriverService {
         Ride savedRide = rideService.updateRideStatus(ride,RideStatus.ONGOING);
 
         paymentService.createNewPayment(savedRide);
+        ratingService.createNewRide(savedRide);
 
         //making the driver to user location to start the ride
         System.out.println("Pickup: " + ride.getPickupLocation());
@@ -129,7 +129,17 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public RiderDto rateRider(Long rideId, Integer rating) {
-        return null;
+        Ride ride = rideService.getRideById(rideId);
+        Driver driver= getCurrentDriver();
+
+        if(!driver.equals(ride.getDriver())){
+            throw new RuntimeException("Driver cannot rate the ride, as the ride does not belong to him");
+        }
+        if(!ride.getRideStatus().equals(RideStatus.ENDED)){
+            throw new RuntimeException("Ride cannot be rated, please rate once it is ENDED "+ ride.getRideStatus());
+        }
+        ratingService.rateRider(ride,rating);
+        return ratingService.rateRider(ride,rating);
     }
 
     @Override

@@ -22,7 +22,7 @@ public class AuthController {
         return  authService.signup(signupDto);
     }
 
-    @PostMapping("/onboardNewDriver/{userId}")
+    @PostMapping("/onboardNewDriver")
     public ResponseEntity<DriverDto> onboardNewDriver(@RequestBody OnboardDriverDTO onboardDriverDTO){
         return new ResponseEntity<>(authService.onboardNewDriver(onboardDriverDTO), HttpStatus.CREATED);
     }

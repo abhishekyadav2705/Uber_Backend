@@ -18,11 +18,11 @@ import java.time.LocalTime;
 public class RideFareSurgePricingFareCalculationStrategy implements RideFareCalculationStrategy {
 
     private final DistanceService distanceService;
-    private static final double SURGE_FACTOR = 2;
+    private static final double SURGE_FACTOR = 2.5;
     private final RestTemplate restTemplate = new RestTemplate();
 
     private double getSurgeMultiplier(RideRequest rideRequest) {
-        double surge = 1.0;
+        double surge = 1.5;
 
         boolean isHeavyRain = checkRain(rideRequest.getPickupLocation().getX(),
                 rideRequest.getPickupLocation().getY());

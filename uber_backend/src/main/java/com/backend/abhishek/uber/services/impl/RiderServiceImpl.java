@@ -7,9 +7,11 @@ import com.backend.abhishek.uber.dto.RiderDto;
 import com.backend.abhishek.uber.entities.*;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
+import com.backend.abhishek.uber.exceptions.ResourceNotFoundException;
 import com.backend.abhishek.uber.repositories.DriverRepository;
 import com.backend.abhishek.uber.repositories.RideRequestRepository;
 import com.backend.abhishek.uber.repositories.RiderRepository;
+import com.backend.abhishek.uber.services.RatingService;
 import com.backend.abhishek.uber.services.RideService;
 import com.backend.abhishek.uber.services.RiderService;
 import com.backend.abhishek.uber.strategies.RideStrategyManager;
@@ -36,6 +38,7 @@ public class RiderServiceImpl implements RiderService {
     private final RiderRepository riderRepository;
     private final RideService rideService;
     private final DriverRepository driverRepository;
+    private final RatingService ratingService;
 
     @Override
     @Transactional
@@ -102,8 +105,17 @@ public class RiderServiceImpl implements RiderService {
 
     @Override
     public DriverDto rateDriver(Long rideId, Integer rating) {
+        Ride ride = rideService.getRideById(rideId);
+        Rider rider= getCurrentRider();
 
-        return null;
+        if(!rider.equals(ride.getRider())){
+            throw new RuntimeException("Rider cannot rate the ride, as the ride does not belong to him");
+        }
+        if(!ride.getRideStatus().equals(RideStatus.ENDED)){
+            throw new RuntimeException("Ride cannot be rated, please rate once it is ENDED "+ ride.getRideStatus());
+        }
+        ratingService.rateRider(ride,rating);
+        return ratingService.rateDriver(ride,rating);
     }
 
     @Override
