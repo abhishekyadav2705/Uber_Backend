@@ -8,14 +8,11 @@ import com.backend.abhishek.uber.entities.Ride;
 import com.backend.abhishek.uber.entities.Rider;
 import com.backend.abhishek.uber.repositories.DriverRepository;
 import com.backend.abhishek.uber.repositories.RatingRepository;
-import com.backend.abhishek.uber.repositories.RideRepository;
 import com.backend.abhishek.uber.repositories.RiderRepository;
 import com.backend.abhishek.uber.services.RatingService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -1,6 +1,5 @@
 package com.backend.abhishek.uber.services.impl;
 
-import com.backend.abhishek.uber.dto.WalletTransactionDTO;
 import com.backend.abhishek.uber.entities.WalletTransaction;
 import com.backend.abhishek.uber.repositories.WalletTransactionRepository;
 import com.backend.abhishek.uber.services.WalletTransactionService;

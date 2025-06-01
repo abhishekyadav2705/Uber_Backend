@@ -40,4 +40,7 @@ public class WalletTransaction {
 
     @CreationTimestamp
     private LocalDateTime timeStamp;
+
+    private boolean isEmailProcessed = false;
+
 }

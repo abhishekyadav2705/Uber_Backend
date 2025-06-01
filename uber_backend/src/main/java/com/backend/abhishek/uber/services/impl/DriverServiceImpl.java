@@ -6,17 +6,19 @@ import com.backend.abhishek.uber.dto.RiderDto;
 import com.backend.abhishek.uber.entities.Driver;
 import com.backend.abhishek.uber.entities.Ride;
 import com.backend.abhishek.uber.entities.RideRequest;
+import com.backend.abhishek.uber.entities.User;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
-import com.backend.abhishek.uber.exceptions.ResourceNotFoundException;
 import com.backend.abhishek.uber.repositories.DriverRepository;
 import com.backend.abhishek.uber.repositories.RideRepository;
 import com.backend.abhishek.uber.services.*;
+import com.backend.abhishek.uber.utils.EmailContentBuilder;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,9 +31,9 @@ public class DriverServiceImpl implements DriverService {
     private final DriverRepository driverRepository;
     private final RideService  rideService;
     private final ModelMapper modelMapper;
-    private final RideRepository rideRepository;
     private final PaymentService paymentService;
     private final RatingService ratingService;
+    private final EmailSenderService emailSenderService;
 
     @Override
     public RideDto acceptRide(Long rideRequestId) {
@@ -47,7 +49,15 @@ public class DriverServiceImpl implements DriverService {
         currentDriver.setAvailable(false);
         currentDriver.setMobileNumber(currentDriver.getMobileNumber());
         Ride ride = rideService.createNewRide(rideRequest,savedDriver);
+        String riderEmailForOtp = ride.getRider().getUser().getEmail();
+        String otp=ride.getOtp();
+        sendOTPOnEmailToRider(riderEmailForOtp,otp);
         return modelMapper.map(ride,RideDto.class);
+    }
+
+    private void sendOTPOnEmailToRider(String riderEmailForOtp, String otp) {
+        String html  = EmailContentBuilder.buildOtpEmail(otp,"OTP to Confirm ride",LocalDateTime.now());
+        emailSenderService.sendOtpEmail(riderEmailForOtp,html);
     }
 
     @Override
@@ -157,8 +167,10 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public Driver getCurrentDriver() {
-        return driverRepository.findById(2L)
-                .orElseThrow((()->new RuntimeException("Driver with id  "+2+" not found!!!")));
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return driverRepository.findByUser(user)
+                .orElseThrow((()->new RuntimeException("Driver with id  "+user.getId()+" not found!!!")));
     }
 
     @Override

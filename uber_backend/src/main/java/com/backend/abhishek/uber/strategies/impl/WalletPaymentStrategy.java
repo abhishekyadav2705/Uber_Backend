@@ -6,13 +6,10 @@ import com.backend.abhishek.uber.entities.Rider;
 import com.backend.abhishek.uber.entities.enums.PaymentStatus;
 import com.backend.abhishek.uber.entities.enums.TransactionMethod;
 import com.backend.abhishek.uber.repositories.PaymentRepository;
-import com.backend.abhishek.uber.services.PaymentService;
 import com.backend.abhishek.uber.services.WalletService;
-import com.backend.abhishek.uber.services.impl.WalletServiceImpl;
 import com.backend.abhishek.uber.strategies.PaymentStrategy;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;

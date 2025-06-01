@@ -1,13 +1,8 @@
 package com.backend.abhishek.uber.dto;
 
-import com.backend.abhishek.uber.entities.Ride;
-import com.backend.abhishek.uber.entities.Wallet;
 import com.backend.abhishek.uber.entities.enums.TransactionMethod;
 import com.backend.abhishek.uber.entities.enums.TransactionType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -29,4 +24,7 @@ public class WalletTransactionDTO {
     private WalletDTO wallet;
 
     private LocalDateTime timeStamp;
+
+    private boolean isEmailProcessed;
+
 }

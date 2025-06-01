@@ -6,7 +6,6 @@ import com.backend.abhishek.uber.entities.Wallet;
 import com.backend.abhishek.uber.entities.enums.PaymentStatus;
 import com.backend.abhishek.uber.entities.enums.TransactionMethod;
 import com.backend.abhishek.uber.repositories.PaymentRepository;
-import com.backend.abhishek.uber.services.PaymentService;
 import com.backend.abhishek.uber.services.WalletService;
 import com.backend.abhishek.uber.strategies.PaymentStrategy;
 import lombok.RequiredArgsConstructor;
