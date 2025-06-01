@@ -1,8 +1,5 @@
 package com.backend.abhishek.uber;
 
-import com.backend.abhishek.uber.services.EmailSenderService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.PostgreSQLContainer;

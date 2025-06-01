@@ -10,12 +10,12 @@ import com.backend.abhishek.uber.entities.User;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
 import com.backend.abhishek.uber.repositories.DriverRepository;
-import com.backend.abhishek.uber.repositories.RideRepository;
 import com.backend.abhishek.uber.services.*;
 import com.backend.abhishek.uber.utils.EmailContentBuilder;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,10 +34,14 @@ public class DriverServiceImpl implements DriverService {
     private final PaymentService paymentService;
     private final RatingService ratingService;
     private final EmailSenderService emailSenderService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
 
     @Override
     public RideDto acceptRide(Long rideRequestId) {
         RideRequest rideRequest = rideRequestService.findRideRequestById(rideRequestId);
+        rideRequest.setRideRequestStatus(RideRequestStatus.CONFIRMED);
+        rideRequestService.update(rideRequest);
         if(!rideRequest.getRideRequestStatus().equals(RideRequestStatus.PENDING)){
             throw new RuntimeException("Ride Request cannot be accepted, status is "+rideRequest.getRideRequestStatus());
         }
@@ -127,6 +131,10 @@ public class DriverServiceImpl implements DriverService {
         Ride savedRide = rideService.updateRideStatus(ride,RideStatus.ENDED);
         updateDriverAvailability(driver,true);
         paymentService.processPayment(ride);
+
+        //sendEmail once ride is ended
+//        applicationEventPublisher.publishEvent(new RideEndedEvent(this, ride.getId(), ride.getTransactionDetails()));
+
 
         return modelMapper.map(savedRide,RideDto.class);
     }

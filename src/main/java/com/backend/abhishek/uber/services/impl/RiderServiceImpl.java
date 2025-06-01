@@ -18,14 +18,18 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -40,29 +44,38 @@ public class RiderServiceImpl implements RiderService {
     private final DriverRepository driverRepository;
     private final RatingService ratingService;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+
+
+    public void cacheRideRequest(RideRequest rideRequest) {
+        String key = "ride:" + rideRequest.getId(); // Unique key per ride
+        redisTemplate.opsForValue().set(key, rideRequest, 2, TimeUnit.MINUTES);
+    }
+
+
     @Override
     @Transactional
     public RideRequestDto requestRide(RideRequestDto rideRequestDto) {
         Rider rider = getCurrentRider();
-        RideRequest rideRequest = modelMapper.map(rideRequestDto,RideRequest.class);
-        log.info(rideRequest.toString());
+        RideRequest rideRequest = modelMapper.map(rideRequestDto, RideRequest.class);
         rideRequest.setRequestedTime(LocalDateTime.now());
-
         rideRequest.setRideRequestStatus(RideRequestStatus.PENDING);
         rideRequest.setRider(rider);
-
-        //to calculate fare we need distance for that we are using OSRM API
         double fare = rideStrategyManager.rideFareCalculationStrategy().calculateFare(rideRequest);
         rideRequest.setFare(fare);
 
         RideRequest savedRideRequest = rideRequestRepository.save(rideRequest);
 
-        List<Driver> drivers =
-                rideStrategyManager.driverMatchingStrategy(rider.getRating()).findMatchingDriver(rideRequest);
-        log.info(drivers.toString());
-        //TODO : Send notification to all drivers about this ride request
+        // Store key with 2 minutes TTL
+        String redisKey = "rideRequest:" + savedRideRequest.getId();
+        stringRedisTemplate.opsForValue().set(redisKey, "PENDING", 120, TimeUnit.SECONDS);
 
-        return modelMapper.map(savedRideRequest,RideRequestDto.class);
+        List<Driver> drivers = rideStrategyManager.driverMatchingStrategy(rider.getRating()).findMatchingDriver(rideRequest);
+        // TODO: Notify drivers
+
+        return modelMapper.map(savedRideRequest, RideRequestDto.class);
     }
 
     @Override
