@@ -3,7 +3,6 @@ services:
     name: uber-backend
     runtime: docker
     plan: free
-    buildCommand: "./mvnw clean install"
     startCommand: ""
     branch: master
     autoDeploy: true
