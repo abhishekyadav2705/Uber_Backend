@@ -7,7 +7,6 @@ import com.backend.abhishek.uber.dto.RiderDto;
 import com.backend.abhishek.uber.entities.*;
 import com.backend.abhishek.uber.entities.enums.RideRequestStatus;
 import com.backend.abhishek.uber.entities.enums.RideStatus;
-import com.backend.abhishek.uber.exceptions.ResourceNotFoundException;
 import com.backend.abhishek.uber.repositories.DriverRepository;
 import com.backend.abhishek.uber.repositories.RideRequestRepository;
 import com.backend.abhishek.uber.repositories.RiderRepository;
@@ -21,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -144,6 +144,7 @@ public class RiderServiceImpl implements RiderService {
     @Override
     public Rider getCurrentRider() {
         //TODO : implement spring security
-        return riderRepository.findById(1L).orElseThrow(()-> new RuntimeException("Rider not found with id 1"));
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return riderRepository.findByUser(user).orElseThrow(()-> new RuntimeException("Rider not found with id "+user.getId()));
     }
 }

@@ -7,9 +7,11 @@ import com.backend.abhishek.uber.dto.UserDto;
 
 public interface AuthService {
 
-    String login(String email, String password);
+    String[] login(String email, String password);
 
     UserDto signup(SignupDto signupDto);
 
     DriverDto onboardNewDriver(OnboardDriverDTO onboardDriverDTO);
+
+    String refreshToken(String refresh);
 }
