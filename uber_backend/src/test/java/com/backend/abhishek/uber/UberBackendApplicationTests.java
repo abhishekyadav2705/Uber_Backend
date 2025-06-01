@@ -1,13 +1,21 @@
 package com.backend.abhishek.uber;
 
+import com.backend.abhishek.uber.services.EmailSenderService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 class UberBackendApplicationTests {
 
-	@Test
-	void contextLoads() {
+	@Bean
+//	@ServiceConnection
+	PostgreSQLContainer<?> postgreSQLContainer(){
+		var image = DockerImageName.parse("postgis/postgis:12-3.0")
+				.asCompatibleSubstituteFor("postgres");
+		return new  PostgreSQLContainer<>(image);
 	}
-
 }
