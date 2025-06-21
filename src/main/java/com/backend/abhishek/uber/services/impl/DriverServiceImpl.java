@@ -40,11 +40,11 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public RideDto acceptRide(Long rideRequestId) {
         RideRequest rideRequest = rideRequestService.findRideRequestById(rideRequestId);
-        rideRequest.setRideRequestStatus(RideRequestStatus.CONFIRMED);
-        rideRequestService.update(rideRequest);
         if(!rideRequest.getRideRequestStatus().equals(RideRequestStatus.PENDING)){
             throw new RuntimeException("Ride Request cannot be accepted, status is "+rideRequest.getRideRequestStatus());
         }
+        rideRequest.setRideRequestStatus(RideRequestStatus.CONFIRMED);
+        rideRequestService.update(rideRequest);
         Driver currentDriver = getCurrentDriver();
         Driver savedDriver = driverRepository.save(currentDriver);
         if(!currentDriver.getAvailable()){
@@ -125,7 +125,7 @@ public class DriverServiceImpl implements DriverService {
             throw new RuntimeException("Driver cannot end the ride as he has not accepted earlier");
         }
         if(!ride.getRideStatus().equals(RideStatus.ONGOING)){
-            throw new RuntimeException("Ride status is not Ongoing, hence cannot be started "+ ride.getRideStatus());
+            throw new RuntimeException("Ride status is not Ongoing, hence cannot be ended "+ ride.getRideStatus());
         }
         ride.setEndedAt(LocalDateTime.now());
         Ride savedRide = rideService.updateRideStatus(ride,RideStatus.ENDED);

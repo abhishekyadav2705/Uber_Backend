@@ -1,5 +1,6 @@
 package com.backend.abhishek.uber.services.impl;
 
+import com.backend.abhishek.uber.advices.AppLogger;
 import com.backend.abhishek.uber.dto.DriverDto;
 import com.backend.abhishek.uber.dto.RideDto;
 import com.backend.abhishek.uber.dto.RideRequestDto;
@@ -18,6 +19,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +39,9 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class RiderServiceImpl implements RiderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RiderServiceImpl.class);
+
 
     private final ModelMapper modelMapper;
     private final RideStrategyManager rideStrategyManager;
@@ -49,16 +56,11 @@ public class RiderServiceImpl implements RiderService {
     private final StringRedisTemplate stringRedisTemplate;
 
 
-    public void cacheRideRequest(RideRequest rideRequest) {
-        String key = "ride:" + rideRequest.getId(); // Unique key per ride
-        redisTemplate.opsForValue().set(key, rideRequest, 2, TimeUnit.MINUTES);
-    }
-
-
     @Override
     @Transactional
     public RideRequestDto requestRide(RideRequestDto rideRequestDto) {
         Rider rider = getCurrentRider();
+        logger.info(rider.getUser().getEmail());
         RideRequest rideRequest = modelMapper.map(rideRequestDto, RideRequest.class);
         rideRequest.setRequestedTime(LocalDateTime.now());
         rideRequest.setRideRequestStatus(RideRequestStatus.PENDING);
@@ -67,9 +69,12 @@ public class RiderServiceImpl implements RiderService {
         rideRequest.setFare(fare);
 
         RideRequest savedRideRequest = rideRequestRepository.save(rideRequest);
+        logger.info("Ride Request Saved");
+        logger.info(savedRideRequest.toString());
 
         // Store key with 2 minutes TTL
         String redisKey = "rideRequest:" + savedRideRequest.getId();
+        //redisKey= rideRequest:1
         stringRedisTemplate.opsForValue().set(redisKey, "PENDING", 120, TimeUnit.SECONDS);
 
         List<Driver> drivers = rideStrategyManager.driverMatchingStrategy(rider.getRating()).findMatchingDriver(rideRequest);

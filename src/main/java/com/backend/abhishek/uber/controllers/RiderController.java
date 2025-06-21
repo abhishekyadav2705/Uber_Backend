@@ -1,5 +1,6 @@
 package com.backend.abhishek.uber.controllers;
 
+import com.backend.abhishek.uber.advices.AppLogger;
 import com.backend.abhishek.uber.dto.*;
 import com.backend.abhishek.uber.services.RiderService;
 import lombok.RequiredArgsConstructor;

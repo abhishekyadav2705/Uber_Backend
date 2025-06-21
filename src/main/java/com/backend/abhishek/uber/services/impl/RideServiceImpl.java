@@ -49,7 +49,7 @@ public class RideServiceImpl implements RideService {
     public Ride updateRideStatus(Ride ride, RideStatus rideStatus) {
         ride.setRideStatus(rideStatus);
         RideRequest rideRequest=rideRequestService.findRideRequestById(ride.getId());
-        rideRequest.setRideRequestStatus(RideRequestStatus.CANCELLED);
+        rideRequest.setRideRequestStatus(RideRequestStatus.CONFIRMED);
         rideRequestRepository.save(rideRequest);
         return rideRepository.save(ride);
     }
