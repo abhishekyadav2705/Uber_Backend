@@ -2,6 +2,7 @@ package com.backend.abhishek.uber.controllers;
 
 import com.backend.abhishek.uber.dto.*;
 import com.backend.abhishek.uber.services.AuthService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,7 +30,20 @@ public class AuthController {
         return  authService.signup(signupDto);
     }
 
-//    @Secured("ROLE_ADMIN")
+    @PostMapping("/initiate-signup")
+    public ResponseEntity<?> initiateSignup(@RequestBody SignupDto signupDto) throws JsonProcessingException {
+        authService.initiateSignup(signupDto);
+        return ResponseEntity.ok(Map.of("message", "OTP sent to " + signupDto.getEmail()));
+    }
+
+    @PostMapping("/verify-signup")
+    public ResponseEntity<UserDto> verifyOtp(@RequestBody OTPVerificationDTO dto) throws JsonProcessingException {
+        UserDto userDto = authService.verifySignupOtp(dto.getEmail(), dto.getOtp());
+        return ResponseEntity.ok(userDto);
+    }
+
+
+    //    @Secured("ROLE_ADMIN")
     @PostMapping("/onboardNewDriver")
     public ResponseEntity<DriverDto> onboardNewDriver(@RequestBody OnboardDriverDTO onboardDriverDTO){
         return new ResponseEntity<>(authService.onboardNewDriver(onboardDriverDTO), HttpStatus.CREATED);

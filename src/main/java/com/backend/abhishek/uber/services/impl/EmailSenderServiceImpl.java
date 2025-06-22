@@ -103,5 +103,23 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         }
     }
 
+    @Override
+    public void sendSignUpOtpEmail(String riderEmailForOtp, String html) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(riderEmailForOtp);
+            helper.setSubject("OTP Verification - Sign Up");
+            helper.setFrom(fromEmail); // Replace with your sender email
+            helper.setText(html, true); // true = HTML content
+
+            javaMailSender.send(message);
+            System.out.println("OTP email sent to: " + riderEmailForOtp);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send OTP email", e);
+        }
+    }
+
 }
 

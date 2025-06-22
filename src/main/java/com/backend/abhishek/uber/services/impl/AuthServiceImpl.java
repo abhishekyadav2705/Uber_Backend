@@ -15,16 +15,22 @@ import com.backend.abhishek.uber.services.AuthService;
 import com.backend.abhishek.uber.services.DriverService;
 import com.backend.abhishek.uber.services.RiderService;
 import com.backend.abhishek.uber.services.WalletService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +44,9 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final EmailSenderServiceImpl emailSenderService;
+    private final ObjectMapper objectMapper;
 
 
     @Override
@@ -101,4 +110,114 @@ public class AuthServiceImpl implements AuthService {
 
         return jwtService.generateAccessToken(user);
     }
+
+    @Override
+    public void initiateSignup(SignupDto signupDto) {
+        if (userRepository.existsByEmail(signupDto.getEmail())) {
+            throw new RuntimeConflictException("Email already registered: " + signupDto.getEmail());
+        }
+
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000); // 6-digit OTP
+        String email = signupDto.getEmail();
+        String otpKey = "SignupOTP:" + email;
+        String dataKey = "SignupData:" + email;
+
+        try {
+            String signupJson = objectMapper.writeValueAsString(signupDto);
+            stringRedisTemplate.opsForValue().set(otpKey, otp, 5, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(dataKey, signupJson, 5, TimeUnit.MINUTES);
+
+            String htmlBody = buildOtpEmailHtml(otp);
+            emailSenderService.sendSignUpOtpEmail(email, htmlBody); // send HTML content
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to process signup data", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public UserDto verifySignupOtp(String email, String inputOtp) throws JsonProcessingException {
+        String otpKey = "SignupOTP:" + email;
+        String dataKey = "SignupData:" + email;
+
+        String storedOtp = stringRedisTemplate.opsForValue().get(otpKey);
+        if (storedOtp == null || !storedOtp.equals(inputOtp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+
+        String json = stringRedisTemplate.opsForValue().get(dataKey);
+        if (json == null) {
+            throw new RuntimeException("Signup data expired.");
+        }
+
+        SignupDto signupDto = new ObjectMapper().readValue(json, SignupDto.class);
+
+        // Proceed with your existing logic
+        User mapperUser = modelMapper.map(signupDto, User.class);
+        mapperUser.setRoles(Set.of(Role.RIDER));
+        mapperUser.setPassword(passwordEncoder.encode(mapperUser.getPassword()));
+
+        User savedUser = userRepository.save(mapperUser);
+        riderService.createNewRider(savedUser);
+        walletService.createNewWallet(savedUser);
+
+        // Clean up Redis
+        stringRedisTemplate.delete(Arrays.asList(otpKey, dataKey));
+
+        return modelMapper.map(savedUser, UserDto.class);
+    }
+
+
+    private String buildOtpEmailHtml(String otp) {
+        return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        .container {
+          max-width: 500px;
+          margin: auto;
+          padding: 20px;
+          font-family: Arial, sans-serif;
+          background-color: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 10px;
+        }
+        .header {
+          text-align: center;
+          color: #2c3e50;
+        }
+        .otp-box {
+          text-align: center;
+          font-size: 32px;
+          font-weight: bold;
+          color: #ffffff;
+          background-color: #007bff;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 8px;
+          letter-spacing: 4px;
+        }
+        .footer {
+          font-size: 12px;
+          color: #888;
+          text-align: center;
+          padding-top: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2 class="header">OTP Verification</h2>
+        <p>Hi there,</p>
+        <p>Use the following OTP to verify your email during signup. It is valid for <strong>5 minutes</strong>.</p>
+        <div class="otp-box">%s</div>
+        <p>If you didn't request this, please ignore the message.</p>
+        <div class="footer">&copy; 2025 Your App Name. All rights reserved.</div>
+      </div>
+    </body>
+    </html>
+    """.formatted(otp);
+    }
+
 }

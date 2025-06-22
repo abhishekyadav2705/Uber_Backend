@@ -11,4 +11,7 @@ public interface EmailSenderService {
     void sendCreditHtmlEmail(String driverEmail, String subject, String html);
 
     void sendOtpEmail(String riderEmailForOtp, String html);
+
+    void sendSignUpOtpEmail(String riderEmailForOtp, String html);
+
 }
