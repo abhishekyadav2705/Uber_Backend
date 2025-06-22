@@ -167,57 +167,95 @@ public class AuthServiceImpl implements AuthService {
         return modelMapper.map(savedUser, UserDto.class);
     }
 
-
     private String buildOtpEmailHtml(String otp) {
         return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        .container {
-          max-width: 500px;
-          margin: auto;
-          padding: 20px;
-          font-family: Arial, sans-serif;
-          background-color: #ffffff;
-          border: 1px solid #e0e0e0;
-          border-radius: 10px;
-        }
-        .header {
-          text-align: center;
-          color: #2c3e50;
-        }
-        .otp-box {
-          text-align: center;
-          font-size: 32px;
-          font-weight: bold;
-          color: #ffffff;
-          background-color: #007bff;
-          padding: 15px;
-          margin: 20px 0;
-          border-radius: 8px;
-          letter-spacing: 4px;
-        }
-        .footer {
-          font-size: 12px;
-          color: #888;
-          text-align: center;
-          padding-top: 20px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h2 class="header">OTP Verification</h2>
-        <p>Hi there,</p>
-        <p>Use the following OTP to verify your email during signup. It is valid for <strong>5 minutes</strong>.</p>
-        <div class="otp-box">%s</div>
-        <p>If you didn't request this, please ignore the message.</p>
-        <div class="footer">&copy; 2025 Your App Name. All rights reserved.</div>
-      </div>
-    </body>
-    </html>
-    """.formatted(otp);
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+      font-family: 'Segoe UI', sans-serif;
     }
+    .container {
+      max-width: 520px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .logo img {
+      max-width: 120px;
+    }
+    .heading {
+      text-align: center;
+      color: #222;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .description {
+      text-align: center;
+      color: #444;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    .otp-box {
+      text-align: center;
+      font-size: 30px;
+      background: #1e3a8a; /* dark blue */
+      color: #ffffff;
+      padding: 18px 0;
+      border-radius: 10px;
+      letter-spacing: 6px;
+      font-weight: bold;
+      margin: 0 auto 30px auto;
+      width: 70%%;
+      border: 2px solid #1e40af;
+      box-shadow: 0 0 6px rgba(0,0,0,0.15);
+    }
+    .note {
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="Uber-App Logo">
+    </div>
+    <div class="heading">Verify Your Email Address</div>
+    <div class="description">
+      Thanks for signing up with <strong>Uber-App</strong>!<br>
+      Enter the OTP below to complete your signup. It is valid for <strong>5 minutes</strong>.
+    </div>
+    <div class="otp-box">%s</div>
+    <div class="note">
+      Didn’t request this? Just ignore this email.
+    </div>
+    <div class="footer">
+      &copy; 2025 Uber-App. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+""".formatted(otp);
+    }
+
 
 }

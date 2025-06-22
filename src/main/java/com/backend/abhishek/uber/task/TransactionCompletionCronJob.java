@@ -61,9 +61,6 @@ public class TransactionCompletionCronJob {
                 emailSenderService.sendCreditHtmlEmail(driverEmail, "Transaction Details for Your  Uber Ride", html);
             }
 
-            // Optionally send to driver
-            // emailSenderService.sendHtmlEmail(driverEmail, "Transaction Info", html);
-
             txn.setEmailProcessed(true); // don't forget this!
             walletTransactionRepository.save(txn);
         }
